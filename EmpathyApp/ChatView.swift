@@ -75,6 +75,7 @@ struct ChatView: View {
                 .background(Color(.systemGray6))
             }
             .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden(true)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     HStack {

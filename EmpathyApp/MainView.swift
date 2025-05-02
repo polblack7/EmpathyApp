@@ -3,121 +3,157 @@ import SwiftUI
 struct MainView: View {
     @StateObject private var viewModel = MainViewModel()
     @EnvironmentObject private var authManager: AuthManager
-    @State private var showProfile = false
+    @FocusState private var focusedField: Field?
+    private enum Field {
+        case chatID
+    }
+    
+    // Palette identical to Login / Registration
+    private let gradientColors = [
+        Color(red: 0.98, green: 0.24, blue: 0.64),   // Flo‑like pink
+        Color(red: 0.55, green: 0.19, blue: 0.96)    // Flo‑like purple
+    ]
     
     var body: some View {
-        NavigationView {
-            VStack(spacing: 30) {
-                // Welcome message
-                VStack(spacing: 10) {
-                    Text("Добро пожаловать!")
-                        .font(.title)
-                        .fontWeight(.bold)
+        ZStack {
+            // Background
+            LinearGradient(colors: gradientColors,
+                           startPoint: .topLeading,
+                           endPoint: .bottomTrailing)
+                .ignoresSafeArea()
+            
+            NavigationView {
+                VStack(spacing: 40) {
                     
-                    if let username = User.currentUser?.username {
-                        Text(username)
-                            .font(.title2)
-                            .foregroundColor(.gray)
-                    }
-                }
-                .padding(.top, 20)
-                
-                // Join Chat Section
-                VStack(spacing: 15) {
-                    Text("Присоединиться к чату")
-                        .font(.headline)
-                    
-                    TextField("ID чата", text: $viewModel.joinChatID)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .autocapitalization(.none)
-                    
-                    Button(action: {
-                        viewModel.joinChat()
-                    }) {
-                        Text("Присоединиться")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                    }
-                    .disabled(viewModel.joinChatID.isEmpty)
-                }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(15)
-                
-                // Create Chat Section
-                VStack(spacing: 15) {
-                    Text("Создать новый чат")
-                        .font(.headline)
-                    
-                    Button(action: {
-                        viewModel.createChat()
-                    }) {
-                        Text("Создать лобби")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.green)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                    }
-                }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(15)
-                
-                if !viewModel.errorMessage.isEmpty {
-                    Text(viewModel.errorMessage)
-                        .foregroundColor(.red)
-                        .font(.caption)
-                }
-                
-                Spacer()
-            }
-            .padding()
-            .navigationBarTitle("Главная", displayMode: .inline)
-            .navigationBarBackButtonHidden(true)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack {
-                        NavigationLink(
-                            destination: ProfileView(),
-                            isActive: $showProfile
-                        ) {
-                            Button(action: {
-                                showProfile = true
-                            }) {
-                                Image(systemName: "person.circle")
-                                    .font(.title2)
-                            }
+                    // Welcome
+                    VStack(spacing: 6) {
+                        Text("Добро пожаловать!")
+                            .font(.system(size: 34, weight: .heavy, design: .rounded))
+                            .foregroundStyle(
+                                LinearGradient(colors: gradientColors,
+                                               startPoint: .leading,
+                                               endPoint: .trailing)
+                            )
+                        
+                        if let username = User.currentUser?.username {
+                            Text(username)
+                                .font(.title3)
+                                .foregroundColor(.black.opacity(0.9))
                         }
+                    }
+                    .padding(.top, 20)
+                    
+                    // Join Chat Section
+                    VStack(spacing: 16) {
+                        Text("Присоединиться к чату")
+                            .font(.headline)
+                            .foregroundColor(.black)
+                        
+                        TextField("ID чата", text: $viewModel.joinChatID)
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(12)
+                            .textInputAutocapitalization(.never)
+                            .focused($focusedField, equals: .chatID)
+                            .onTapGesture { focusedField = .chatID }
+                            .frame(maxWidth: .infinity)
+                            .contentShape(Rectangle())
                         
                         Button(action: {
-                            authManager.logout()
+                            viewModel.joinChat()
                         }) {
-                            Image(systemName: "rectangle.portrait.and.arrow.right")
-                                .font(.title2)
+                            Text("Присоединиться")
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .fontWeight(.semibold)
                         }
+                        .background(
+                            LinearGradient(colors: gradientColors,
+                                           startPoint: .leading,
+                                           endPoint: .trailing)
+                        )
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                        .disabled(viewModel.joinChatID.isEmpty)
+                        .opacity(viewModel.joinChatID.isEmpty ? 0.6 : 1)
+                    }
+                    .padding(.horizontal, 32)
+                    
+                    
+                    // Create Chat Section
+                    VStack(spacing: 16) {
+                        Text("Создать новый чат")
+                            .font(.headline)
+                            .foregroundColor(.black)
+                        
+                        Button(action: {
+                            viewModel.createChat()
+                        }) {
+                            Text("Создать лобби")
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .fontWeight(.semibold)
+                        }
+                        .background(
+                            LinearGradient(colors: gradientColors,
+                                           startPoint: .leading,
+                                           endPoint: .trailing)
+                        )
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                    }
+                    .padding(.horizontal, 32)
+                    
+                    if !viewModel.errorMessage.isEmpty {
+                        Text(viewModel.errorMessage)
+                            .foregroundColor(.red)
+                            .font(.caption)
+                    }
+                    
+                    Spacer()
+                }
+                .padding()
+                .navigationBarTitle("Главная", displayMode: .inline)
+                .navigationBarBackButtonHidden(true)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        HStack(spacing: 24) {
+                            NavigationLink(destination: ProfileView()) {
+                                Image(systemName: "person.circle")
+                                    .font(.title2)
+                                    .foregroundColor(.purple)
+                            }
+                            Button(action: { authManager.logout() }) {
+                                Image(systemName: "rectangle.portrait.and.arrow.right")
+                                    .font(.title2)
+                                    .foregroundColor(.red)
+                            }
+                        }
+                        .foregroundColor(.white)
                     }
                 }
+                .background(
+                    NavigationLink(
+                        destination: ChatView(viewModel: ChatViewModel(chat: viewModel.activeChat ?? Chat(participants: []))),
+                        isActive: Binding(
+                            get: { viewModel.activeChat != nil },
+                            set: { if !$0 { viewModel.activeChat = nil } }
+                        )
+                    ) {
+                        EmptyView()
+                    }
+                )
+                .navigationBarTitleDisplayMode(.inline)
+                .navigationViewStyle(StackNavigationViewStyle())
+                .navigationBarBackButtonHidden(true)
+                
             }
-            .background(
-                NavigationLink(
-                    destination: ChatView(viewModel: ChatViewModel(chat: viewModel.activeChat ?? Chat(participants: []))),
-                    isActive: Binding(
-                        get: { viewModel.activeChat != nil },
-                        set: { if !$0 { viewModel.activeChat = nil } }
-                    )
-                ) {
-                    EmptyView()
-                }
-            )
         }
+        
     }
 }
 
 #Preview {
     MainView()
         .environmentObject(AuthManager())
-} 
+}

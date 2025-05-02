@@ -1,54 +1,136 @@
+
 import SwiftUI
 
+
+
 struct RegistrationView: View {
-    @Environment(\.presentationMode) var presentationMode
+    @Environment(\.presentationMode) private var presentationMode
     @StateObject private var viewModel = RegistrationViewModel()
+    @EnvironmentObject private var authManager: AuthManager
+    
+    // Same gradient palette as LoginView
+    private let gradientColors = [
+        Color(red: 0.98, green: 0.24, blue: 0.64),   // Flo‑like pink
+        Color(red: 0.55, green: 0.19, blue: 0.96)    // Flo‑like purple
+    ]
+    
+    // Focus handling
+    @FocusState private var focusedField: Field?
+    private enum Field {
+        case email, username, password, confirm
+    }
     
     var body: some View {
-        NavigationView {
-            Form {
-                Section(header: Text("Регистрация")) {
-                    TextField("Email", text: $viewModel.email)
-                        .textContentType(.emailAddress)
-                        .autocapitalization(.none)
+        ZStack {
+            // Background gradient
+            LinearGradient(colors: gradientColors,
+                           startPoint: .topLeading,
+                           endPoint: .bottomTrailing)
+                .ignoresSafeArea()
+            
+            NavigationView {
+                VStack(spacing: 32) {
                     
-                    TextField("Имя пользователя", text: $viewModel.username)
-                        .autocapitalization(.none)
+                    // Title
+                    Text("Регистрация")
+                        .font(.system(size: 34, weight: .heavy, design: .rounded))
+                        .foregroundStyle(
+                            LinearGradient(colors: gradientColors,
+                                           startPoint: .leading,
+                                           endPoint: .trailing)
+                        )
+                        .padding(.bottom, 20)
                     
-                    SecureField("Пароль", text: $viewModel.password)
-                        .textContentType(.newPassword)
-                    
-                    SecureField("Подтверждение пароля", text: $viewModel.confirmPassword)
-                        .textContentType(.newPassword)
-                }
-                
-                if !viewModel.errorMessage.isEmpty {
-                    Section {
-                        Text(viewModel.errorMessage)
-                            .foregroundColor(.red)
-                    }
-                }
-                
-                Section {
-                    Button(action: {
-                        if viewModel.register() {
-                            presentationMode.wrappedValue.dismiss()
+                    // Input fields
+                    VStack(spacing: 20) {
+                        
+                        TextField("Email", text: $viewModel.email)
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(12)
+                            .foregroundColor(.black)
+                            .keyboardType(.emailAddress)
+                            .textContentType(.emailAddress)
+                            .autocapitalization(.none)
+                            .focused($focusedField, equals: .email)
+                            .onTapGesture { focusedField = .email }
+                        
+                        TextField("Имя пользователя", text: $viewModel.username)
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(12)
+                            .foregroundColor(.black)
+                            .autocapitalization(.none)
+                            .focused($focusedField, equals: .username)
+                            .onTapGesture { focusedField = .username }
+                        
+                        SecureField("Пароль", text: $viewModel.password)
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(12)
+                            .foregroundColor(.black)
+                            .textContentType(.newPassword)
+                            .focused($focusedField, equals: .password)
+                            .onTapGesture { focusedField = .password }
+                        
+                        SecureField("Подтверждение пароля", text: $viewModel.confirmPassword)
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(12)
+                            .foregroundColor(.black)
+                            .textContentType(.newPassword)
+                            .focused($focusedField, equals: .confirm)
+                            .onTapGesture { focusedField = .confirm }
+                        
+                        // Error message
+                        if !viewModel.errorMessage.isEmpty {
+                            Text(viewModel.errorMessage)
+                                .foregroundColor(.red)
+                                .font(.caption)
                         }
-                    }) {
-                        Text("Зарегистрироваться")
-                            .frame(maxWidth: .infinity)
-                            .multilineTextAlignment(.center)
+                        
+                        // Register button
+                        Button(action: {
+                            if viewModel.register() {
+                                authManager.login()          // mark user as authenticated
+                            }
+                        }) {
+                            Text("Зарегистрироваться")
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .fontWeight(.semibold)
+                        }
+                        .background(
+                            LinearGradient(colors: gradientColors,
+                                           startPoint: .leading,
+                                           endPoint: .trailing)
+                        )
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                        .disabled(viewModel.email.isEmpty ||
+                                  viewModel.username.isEmpty ||
+                                  viewModel.password.isEmpty ||
+                                  viewModel.confirmPassword.isEmpty)
+                        .opacity((viewModel.email.isEmpty ||
+                                  viewModel.username.isEmpty ||
+                                  viewModel.password.isEmpty ||
+                                  viewModel.confirmPassword.isEmpty) ? 0.6 : 1.0)
                     }
+                    .padding(.horizontal, 32)
+                    
+                    Spacer()
                 }
+                .padding()
+                .navigationBarTitleDisplayMode(.inline)
+                .navigationBarBackButtonHidden(true)
             }
-            .navigationTitle("Регистрация")
-            .navigationBarItems(trailing: Button("Отмена") {
-                presentationMode.wrappedValue.dismiss()
-            })
         }
+        
+        
+        
     }
 }
 
 #Preview {
     RegistrationView()
-} 
+}

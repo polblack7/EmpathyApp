@@ -15,6 +15,7 @@ struct EmpathyApp: App {
                         .environmentObject(authManager)
                 }
             }
+            .preferredColorScheme(.light)
         }
     }
 }
@@ -35,4 +36,4 @@ class AuthManager: ObservableObject {
         User.currentUser = nil
         isAuthenticated = false
     }
-} 
+}
