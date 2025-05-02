@@ -5,7 +5,7 @@ class ChatViewModel: ObservableObject {
     // MARK: - Properties
     let chat: Chat
     @Published var messages: [Message] = []
-    @Published var categories: [String: [String]]
+    @Published var categories: [String: [Card]]
     @Published var selectedCategory: String
     
     // MARK: - Initialization
@@ -13,34 +13,21 @@ class ChatViewModel: ObservableObject {
         self.chat = chat
         
         // Initialize default categories and cards
-        var initialCategories: [String: [String]] = [
+        var initialCategories: [String: [Card]] = [
             "Эмоции": [
-                "Я рад",
-                "Мне грустно",
-                "Я разочарован",
-                "Я счастлив",
-                "Я волнуюсь"
+                Card(title: "Радость", description: "Я чувствую радость и счастье", category: "Эмоции", creatorId: UUID()),
+                Card(title: "Грусть", description: "Мне грустно и одиноко", category: "Эмоции", creatorId: UUID()),
+                Card(title: "Гнев", description: "Я злюсь и раздражен", category: "Эмоции", creatorId: UUID())
             ],
             "Поддержка": [
-                "Я с тобой",
-                "Ты не один",
-                "Я тебя понимаю",
-                "Я здесь для тебя",
-                "Ты справишься"
+                Card(title: "Я с тобой", description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam sagittis eleifend mauris, vitae faucibus ipsum. Aenean pharetra ipsum et elementum ornare. Aliquam tincidunt arcu tempus, aliquam enim sed, aliquam est. Ut mollis eleifend ante non elementum. Morbi quis sem finibus, iaculis dolor eget, rutrum risus. Nam vehicula nisl mauris, a ultricies risus tincidunt non. Nunc nisi enim, convallis in iaculis in, consequat eget sapien. Sed ex urna, sagittis a est ut, faucibus eleifend elit. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Proin vehicula tellus in velit aliquet, quis tristique neque ultricies. Integer vehicula, est et malesuada rutrum, massa magna ultrices lectus, non molestie dui ante at mi. Donec rhoncus dolor non lorem interdum, ut pulvinar diam laoreet.", category: "Поддержка", creatorId: UUID()),
+                Card(title: "Я понимаю", description: "Я понимаю твои чувства", category: "Поддержка", creatorId: UUID()),
+                Card(title: "Ты сильный", description: "Ты справишься с этим", category: "Поддержка", creatorId: UUID())
             ],
             "Вопросы": [
-                "Как ты себя чувствуешь?",
-                "Что тебя беспокоит?",
-                "Чем я могу помочь?",
-                "Что тебе нужно?",
-                "Как ты хочешь это обсудить?"
-            ],
-            "Действия": [
-                "Давай поговорим",
-                "Можно обнять?",
-                "Хочешь помолчать?",
-                "Давай подумаем вместе",
-                "Можно я помогу?"
+                Card(title: "Как ты себя чувствуешь?", description: "Расскажи о своих чувствах", category: "Вопросы", creatorId: UUID()),
+                Card(title: "Что тебя беспокоит?", description: "Что вызывает у тебя тревогу?", category: "Вопросы", creatorId: UUID()),
+                Card(title: "Чем я могу помочь?", description: "Как я могу тебя поддержать?", category: "Вопросы", creatorId: UUID())
             ]
         ]
         
@@ -58,12 +45,13 @@ class ChatViewModel: ObservableObject {
     }
     
     // MARK: - Message Management
-    func sendCard(text: String) {
+    func sendCard(_ card: Card) {
         guard let currentUser = User.currentUser else { return }
         
         let message = Message(
-            text: text,
-            senderId: currentUser.id
+            text: "",
+            senderId: currentUser.id,
+            card: card
         )
         
         messages.append(message)
@@ -82,33 +70,40 @@ class ChatViewModel: ObservableObject {
     }
     
     // MARK: - Custom Card Management
-    func addCustomCard(category: String, text: String) {
-        guard !text.isEmpty else { return }
+    func addCustomCard(title: String, description: String, image: UIImage? = nil, category: String) {
+        guard !title.isEmpty && !description.isEmpty else { return }
+        guard let currentUser = User.currentUser else { return }
+        
+        let card = Card(
+            title: title,
+            description: description,
+            image: image,
+            category: category,
+            creatorId: currentUser.id
+        )
         
         // Add to existing category or create new one
         if categories[category] != nil {
-            categories[category]?.append(text)
+            categories[category]?.append(card)
         } else {
-            categories[category] = [text]
+            categories[category] = [card]
         }
         
         // Update user's cards count
-        if let currentUser = User.currentUser {
-            var updatedUser = currentUser
-            updatedUser.cardsCount += 1
-            
-            // Add category to user's categories if it's new
-            if !updatedUser.categories.contains(category) {
-                updatedUser.categories.append(category)
-            }
-            
-            // Update current user
-            User.currentUser = updatedUser
-            
-            // Update in all users list
-            if let index = User.allUsers.firstIndex(where: { $0.id == currentUser.id }) {
-                User.allUsers[index] = updatedUser
-            }
+        var updatedUser = currentUser
+        updatedUser.cardsCount += 1
+        
+        // Add category to user's categories if it's new
+        if !updatedUser.categories.contains(category) {
+            updatedUser.categories.append(category)
+        }
+        
+        // Update current user
+        User.currentUser = updatedUser
+        
+        // Update in all users list
+        if let index = User.allUsers.firstIndex(where: { $0.id == currentUser.id }) {
+            User.allUsers[index] = updatedUser
         }
     }
     
