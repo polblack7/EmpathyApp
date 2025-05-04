@@ -119,3 +119,4 @@ class ChatViewModel: ObservableObject {
         selectedCategory = categories.keys.first ?? ""
     }
 } 
+ 

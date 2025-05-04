@@ -26,7 +26,9 @@ class AuthManager: ObservableObject {
     init() {
         // Check if user is already logged in
         isAuthenticated = User.currentUser != nil
+        
     }
+    
     
     func login() {
         isAuthenticated = true

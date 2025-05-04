@@ -1,5 +1,14 @@
 import SwiftUI
 
+// Фирменный градиент приложения (розовый → фиолетовый)
+private let floGradient = LinearGradient(
+    colors: [
+        Color(red: 1.0, green: 0.2, blue: 0.1),         // розовый
+        Color(red: 0.55, green: 0.0, blue: 1.0)          // фиолетовый
+    ],
+    startPoint: .topLeading,
+    endPoint: .bottomTrailing)
+
 struct ChatView: View {
     @StateObject var viewModel: ChatViewModel
     @Environment(\.presentationMode) var presentationMode
@@ -13,32 +22,41 @@ struct ChatView: View {
     
     var body: some View {
         ZStack {
+            Color.white
+                .ignoresSafeArea()
             VStack(spacing: 0) {
-                // Chat Info
-                VStack(spacing: 8) {
-                    Text("Чат \(viewModel.chat.id.uuidString.prefix(8))")
-                        .font(.headline)
-                    Text(viewModel.chat.createdAt, style: .date)
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
-                }
-                .padding()
-                .background(Color(.systemGray6))
                 
                 // Messages List
-                ScrollView {
-                    LazyVStack(spacing: 12) {
-                        ForEach(viewModel.messages) { message in
-                            MessageBubble(message: message) { card in
-                                selectedCard = card
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        LazyVStack(spacing: 12) {
+                            ForEach(viewModel.messages) { message in
+                                MessageBubble(message: message) { card in
+                                    selectedCard = card
+                                }
+                                .id(message.id) // идентификатор для прокрутки к сообщению
+                            }
+                        }
+                        .padding()
+                    }
+                    // Прокрутка к последнему сообщению при открытии экрана
+                    .onAppear {
+                        if let last = viewModel.messages.last {
+                            proxy.scrollTo(last.id, anchor: .bottom)
+                        }
+                    }
+                    // Прокрутка к последнему сообщению при каждом новом сообщении
+                    .onChange(of: viewModel.messages.count) { _ in
+                        if let last = viewModel.messages.last {
+                            withAnimation {
+                                proxy.scrollTo(last.id, anchor: .bottom)
                             }
                         }
                     }
-                    .padding()
                 }
                 
                 // Cards Section
-                VStack(spacing: 12) {
+                VStack(spacing: 6) {
                     // Scrollable Categories
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
@@ -49,15 +67,19 @@ struct ChatView: View {
                                     Text(category)
                                         .padding(.horizontal, 16)
                                         .padding(.vertical, 8)
-                                        .background(viewModel.selectedCategory == category ? Color.blue : Color(.systemGray5))
+                                        .background(viewModel.selectedCategory == category
+                                                    ? AnyShapeStyle(floGradient)
+                                                    : AnyShapeStyle(Color(.systemGray5)))
                                         .foregroundColor(viewModel.selectedCategory == category ? .white : .primary)
-                                        .cornerRadius(20)
+                                        .clipShape(Capsule())
                                 }
                             }
                         }
                         .padding(.horizontal)
                     }
                     .frame(height: 44)
+                    
+                    
                     
                     // Cards Grid
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -69,26 +91,53 @@ struct ChatView: View {
                             }
                         }
                         .padding(.horizontal)
+                        .padding(.top, 22)
                     }
-                    .frame(height: 200)
+                    .frame(height: 230)
+                    
                 }
-                .background(Color(.systemGray6))
+                
+                
             }
+            .font(.custom("AvenirNextRounded-Regular", size: 17))
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarBackButtonHidden(true)
             .toolbar {
+                // “Плюс” — слева
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        showNewCardSheet = true
+                    }) {
+                        Circle()
+                            .fill(floGradient)
+                            .frame(width: 32, height: 32)
+                            .overlay(Image(systemName: "plus").foregroundColor(.white))
+                    }
+                }
+
+                // “Покинуть” — справа
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack {
-                        Button(action: {
-                            showNewCardSheet = true
-                        }) {
-                            Image(systemName: "plus.circle")
-                        }
-                        
-                        Button("Покинуть") {
-                            viewModel.leaveChat()
-                            presentationMode.wrappedValue.dismiss()
-                        }
+                    Button(action: {
+                        viewModel.leaveChat()
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Text("Покинуть")
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(floGradient)
+                            .foregroundColor(.white)
+                            .clipShape(Capsule())
+                    }
+                }
+
+                ToolbarItem(placement: .principal) {
+                    VStack(spacing: 2) {
+                        Text("Чат \(viewModel.chat.id.uuidString.prefix(8))")
+                            .font(.headline)
+                            .foregroundStyle(floGradient)
+                        Text(viewModel.chat.createdAt, style: .date)
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
                     }
                 }
             }
@@ -149,6 +198,7 @@ struct ChatView: View {
             .sheet(isPresented: $showImagePicker) {
                 ImagePicker(image: $newCardImage)
             }
+            // (Title/date overlay removed)
             // Кастомный overlay для просмотра карточки
             .overlay(
                 Group {
@@ -160,7 +210,7 @@ struct ChatView: View {
                             Spacer()
                             ZStack {
                                 RoundedRectangle(cornerRadius: 32, style: .continuous)
-                                    .fill(Color.white)
+                                    .fill(.ultraThinMaterial)
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 32, style: .continuous)
                                             .stroke(Color.black, lineWidth: 2)
@@ -172,9 +222,11 @@ struct ChatView: View {
                                         .frame(maxWidth: .infinity, minHeight: 60)
                                         .background(Color.white)
                                         .multilineTextAlignment(.center)
+                                        .cornerRadius(32)
+                                        .padding(10)
                                     ZStack {
                                         RoundedRectangle(cornerRadius: 32, style: .continuous)
-                                            .fill(Color(red: 0.6, green: 0.87, blue: 0.45))
+                                            .fill(floGradient)
                                         ScrollView {
                                             Text(card.description)
                                                 .foregroundColor(.white)
@@ -215,12 +267,14 @@ struct CardView: View {
                     .font(.title3)
                     .foregroundColor(.black)
                     .frame(maxWidth: .infinity, minHeight: 60)
-                    .background(Color.white)
+                    .background(Color.white.opacity(0.0))
                     .multilineTextAlignment(.center)
+                    .padding(10)
+                    
                 // Описание карточки
                 ZStack {
                     RoundedRectangle(cornerRadius: 32, style: .continuous)
-                        .fill(Color(red: 0.6, green: 0.87, blue: 0.45))
+                        .fill(floGradient)
                         .frame(maxWidth: .infinity)
                     Text(card.description)
                         .foregroundColor(.white)
@@ -231,15 +285,16 @@ struct CardView: View {
                 .frame(maxWidth: .infinity, minHeight: 120)
             }
             .frame(width: 220, height: 220)
-            .background(Color.white)
+            .background(.ultraThinMaterial)
             .cornerRadius(32)
             .overlay(
                 RoundedRectangle(cornerRadius: 32, style: .continuous)
-                    .stroke(Color.black, lineWidth: 2)
+                    .stroke(Color.black.opacity(0.1), lineWidth: 2)
             )
-            .shadow(radius: 4)
+            
         }
         .buttonStyle(PlainButtonStyle())
+        
     }
 }
 
@@ -259,8 +314,8 @@ struct MessageBubble: View {
             } else {
                 Text(message.text)
                     .padding()
-                    .background(message.senderId == User.currentUser?.id ? Color.blue : Color(.systemGray5))
-                    .foregroundColor(message.senderId == User.currentUser?.id ? .white : .primary)
+                    .background(AnyShapeStyle(floGradient))
+                    .foregroundColor(.white)
                     .cornerRadius(15)
             }
             
@@ -308,4 +363,4 @@ struct ImagePicker: UIViewControllerRepresentable {
     NavigationView {
         ChatView(viewModel: ChatViewModel(chat: Chat(participants: [])))
     }
-} 
+}
