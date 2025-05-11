@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 
+@MainActor
 class RegistrationViewModel: ObservableObject {
     // MARK: - Published Properties
     @Published var email: String = ""
@@ -9,6 +10,7 @@ class RegistrationViewModel: ObservableObject {
     @Published var confirmPassword: String = ""
     @Published var errorMessage: String = ""
     @Published var isRegistrationSuccessful: Bool = false
+    @Published var isLoading: Bool = false
     
     // MARK: - Validation Methods
     private func validateEmail() -> Bool {
@@ -18,15 +20,15 @@ class RegistrationViewModel: ObservableObject {
     }
     
     private func validatePassword() -> Bool {
-        return password.count >= 6
+        return password.count >= 8
     }
     
     private func validateUsername() -> Bool {
-        return username.count >= 3
+        return username.count >= 3 && username.count <= 50
     }
     
     // MARK: - Registration Method
-    func register() -> Bool {
+    func register() async -> Bool {
         // Reset error message
         errorMessage = ""
         
@@ -48,7 +50,7 @@ class RegistrationViewModel: ObservableObject {
         }
         
         guard validateUsername() else {
-            errorMessage = "Имя пользователя должно содержать минимум 3 символа"
+            errorMessage = "Имя пользователя должно содержать от 3 до 50 символов"
             return false
         }
         
@@ -59,7 +61,7 @@ class RegistrationViewModel: ObservableObject {
         }
         
         guard validatePassword() else {
-            errorMessage = "Пароль должен содержать минимум 6 символов"
+            errorMessage = "Пароль должен содержать минимум 8 символов"
             return false
         }
         
@@ -69,26 +71,36 @@ class RegistrationViewModel: ObservableObject {
             return false
         }
         
-        // Check if user already exists
-        if User.allUsers.contains(where: { $0.email == email }) {
-            errorMessage = "Пользователь с таким email уже существует"
-            return false
+        isLoading = true
+        
+        do {
+            let response = try await NetworkService.shared.register(
+                email: email,
+                username: username,
+                password: password
+            )
+            
+            // Create user from response
+            let user = User(
+                id: UUID(uuidString: response.user.id) ?? UUID(),
+                email: response.user.email,
+                username: response.user.username,
+                password: password // Note: In a real app, you wouldn't store the password
+            )
+            
+            // Set current user
+            User.currentUser = user
+            isRegistrationSuccessful = true
+            isLoading = false
+            return true
+            
+        } catch NetworkError.serverError(let message) {
+            errorMessage = message
+        } catch {
+            errorMessage = "Ошибка при регистрации: \(error.localizedDescription)"
         }
         
-        // Create new user
-        let newUser = User(
-            email: email,
-            username: username,
-            password: password
-        )
-        
-        // Add user to all users list
-        User.allUsers.append(newUser)
-        
-        // Set current user
-        User.currentUser = newUser
-        
-        isRegistrationSuccessful = true
-        return true
+        isLoading = false
+        return false
     }
 } 

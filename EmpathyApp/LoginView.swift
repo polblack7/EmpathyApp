@@ -69,15 +69,22 @@ struct LoginView: View {
                         
                         // Primary login button
                         Button(action: {
-                            viewModel.login()
-                            if viewModel.isAuthenticated {
-                                authManager.login()
+                            Task {
+                                await viewModel.login()
+                                if viewModel.isAuthenticated {
+                                    authManager.login()
+                                }
                             }
                         }) {
-                            Text("Войти")
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .fontWeight(.semibold)
+                            if viewModel.isLoading {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            } else {
+                                Text("Войти")
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .fontWeight(.semibold)
+                            }
                         }
                         .background(
                             LinearGradient(colors: gradientColors,
@@ -86,8 +93,8 @@ struct LoginView: View {
                         )
                         .foregroundColor(.white)
                         .cornerRadius(12)
-                        .disabled(viewModel.email.isEmpty || viewModel.password.isEmpty)
-                        .opacity(viewModel.email.isEmpty || viewModel.password.isEmpty ? 0.6 : 1.0)
+                        .disabled(viewModel.email.isEmpty || viewModel.password.isEmpty || viewModel.isLoading)
+                        .opacity((viewModel.email.isEmpty || viewModel.password.isEmpty || viewModel.isLoading) ? 0.6 : 1.0)
                         
                         // Registration link (full‑width tap area)
                         NavigationLink(destination: RegistrationView()) {

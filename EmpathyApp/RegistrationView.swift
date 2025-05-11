@@ -1,4 +1,3 @@
-
 import SwiftUI
 
 
@@ -91,14 +90,21 @@ struct RegistrationView: View {
                         
                         // Register button
                         Button(action: {
-                            if viewModel.register() {
-                                authManager.login()          // mark user as authenticated
+                            Task {
+                                if await viewModel.register() {
+                                    authManager.login()          // mark user as authenticated
+                                }
                             }
                         }) {
-                            Text("Зарегистрироваться")
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .fontWeight(.semibold)
+                            if viewModel.isLoading {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            } else {
+                                Text("Зарегистрироваться")
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .fontWeight(.semibold)
+                            }
                         }
                         .background(
                             LinearGradient(colors: gradientColors,
@@ -110,11 +116,13 @@ struct RegistrationView: View {
                         .disabled(viewModel.email.isEmpty ||
                                   viewModel.username.isEmpty ||
                                   viewModel.password.isEmpty ||
-                                  viewModel.confirmPassword.isEmpty)
+                                  viewModel.confirmPassword.isEmpty ||
+                                  viewModel.isLoading)
                         .opacity((viewModel.email.isEmpty ||
                                   viewModel.username.isEmpty ||
                                   viewModel.password.isEmpty ||
-                                  viewModel.confirmPassword.isEmpty) ? 0.6 : 1.0)
+                                  viewModel.confirmPassword.isEmpty ||
+                                  viewModel.isLoading) ? 0.6 : 1.0)
                     }
                     .padding(.horizontal, 32)
                     

@@ -7,6 +7,7 @@ class ChatViewModel: ObservableObject {
     @Published var messages: [Message] = []
     @Published var categories: [String: [Card]]
     @Published var selectedCategory: String
+
     
     // MARK: - Initialization
     init(chat: Chat) {
