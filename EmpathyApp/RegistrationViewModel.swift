@@ -80,16 +80,19 @@ class RegistrationViewModel: ObservableObject {
                 password: password
             )
             
+            // Store token
+            TokenService.shared.saveToken(response.token)
+            
             // Create user from response
             let user = User(
                 id: UUID(uuidString: response.user.id) ?? UUID(),
                 email: response.user.email,
-                username: response.user.username,
-                password: password // Note: In a real app, you wouldn't store the password
+                username: response.user.username
             )
             
             // Set current user
             User.currentUser = user
+            
             isRegistrationSuccessful = true
             isLoading = false
             return true

@@ -48,7 +48,7 @@ class ProfileViewModel: ObservableObject {
         
         // Update password if changed
         if !password.isEmpty {
-            updatedUser.password = password
+            // updatedUser.password = password
         }
         
         // Update categories

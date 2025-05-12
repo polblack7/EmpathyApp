@@ -6,7 +6,6 @@ struct User: Identifiable, Equatable {
     let id: UUID
     let email: String
     var username: String
-    var password: String
     var avatarImage: UIImage?
     var categories: [String]
     var chatsCount: Int
@@ -16,11 +15,10 @@ struct User: Identifiable, Equatable {
     static var currentUser: User?
     static var allUsers: [User] = []
     
-    init(id: UUID = UUID(), email: String, username: String, password: String, avatarImage: UIImage? = nil, categories: [String] = [], chatsCount: Int = 0, cardsCount: Int = 0, messagesCount: Int = 0) {
+    init(id: UUID = UUID(), email: String, username: String, avatarImage: UIImage? = nil, categories: [String] = [], chatsCount: Int = 0, cardsCount: Int = 0, messagesCount: Int = 0) {
         self.id = id
         self.email = email
         self.username = username
-        self.password = password
         self.avatarImage = avatarImage
         self.categories = categories
         self.chatsCount = chatsCount
