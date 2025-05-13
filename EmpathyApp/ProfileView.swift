@@ -6,14 +6,14 @@ struct ProfileView: View {
     
     // Shared gradient palette
     private let gradientColors = [
-        Color(red: 1.0, green: 0.85, blue: 0.94),   // Pastel pink
-        Color(red: 0.85, green: 0.85, blue: 1.0)    // Pastel lavender
+        Color(red: 0.75, green: 0.75, blue: 0.95),   // More vibrant lavender
+        Color(red: 0.65, green: 0.75, blue: 0.95)    // More vibrant blue
     ]
     
     // Brighter gradient for primary action buttons
     private let buttonGradientColors = [
-        Color(red: 0.98, green: 0.24, blue: 0.64),   // Vivid pink
-        Color(red: 0.55, green: 0.19, blue: 0.96)    // Vivid purple
+        Color(red: 0.75, green: 0.75, blue: 0.95),   // More vibrant lavender
+        Color(red: 0.65, green: 0.75, blue: 0.95)    // More vibrant blue
     ]
     
     // Focus handling
@@ -63,7 +63,7 @@ struct ProfileView: View {
                     VStack(spacing: 20) {
                         TextField("Имя пользователя", text: $viewModel.username)
                             .padding()
-                            .background(Color(.systemGray6))
+                            .background(Color(.systemGray5))
                             .cornerRadius(12)
                             .focused($focusedField, equals: .username)
                             .onTapGesture { focusedField = .username }
@@ -71,7 +71,7 @@ struct ProfileView: View {
                         
                         SecureField("Новый пароль", text: $viewModel.password)
                             .padding()
-                            .background(Color(.systemGray6))
+                            .background(Color(.systemGray5))
                             .cornerRadius(12)
                             .onChange(of: viewModel.password) { _ in isFormDirty = true }
                     }

@@ -13,8 +13,8 @@ struct LoginView: View {
     }
     
     private let gradientColors = [
-        Color(red: 0.98, green: 0.24, blue: 0.64),   // Flo‑like pink
-        Color(red: 0.55, green: 0.19, blue: 0.96)    // Flo‑like purple
+        Color(red: 0.75, green: 0.75, blue: 0.95),   // More vibrant lavender
+        Color(red: 0.65, green: 0.75, blue: 0.95)    // More vibrant blue
     ]
     
     var body: some View {
@@ -42,7 +42,7 @@ struct LoginView: View {
                     VStack(spacing: 20) {
                         TextField("Email", text: $viewModel.email)
                             .padding()
-                            .background(Color(.systemGray6))
+                            .background(Color(.systemGray5))
                             .cornerRadius(12)
                             .foregroundColor(.black)
                             .keyboardType(.emailAddress)
@@ -53,7 +53,7 @@ struct LoginView: View {
                         
                         SecureField("Пароль", text: $viewModel.password)
                             .padding()
-                            .background(Color(.systemGray6))
+                            .background(Color(.systemGray5))
                             .cornerRadius(12)
                             .foregroundColor(.black)
                             .textContentType(.password)

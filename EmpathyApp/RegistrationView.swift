@@ -9,8 +9,8 @@ struct RegistrationView: View {
     
     // Same gradient palette as LoginView
     private let gradientColors = [
-        Color(red: 0.98, green: 0.24, blue: 0.64),   // Flo‑like pink
-        Color(red: 0.55, green: 0.19, blue: 0.96)    // Flo‑like purple
+        Color(red: 0.75, green: 0.75, blue: 0.95),   // More vibrant lavender
+        Color(red: 0.65, green: 0.75, blue: 0.95)    // More vibrant blue
     ]
     
     // Focus handling
@@ -45,7 +45,7 @@ struct RegistrationView: View {
                         
                         TextField("Email", text: $viewModel.email)
                             .padding()
-                            .background(Color(.systemGray6))
+                            .background(Color(.systemGray5))
                             .cornerRadius(12)
                             .foregroundColor(.black)
                             .keyboardType(.emailAddress)
@@ -56,7 +56,7 @@ struct RegistrationView: View {
                         
                         TextField("Имя пользователя", text: $viewModel.username)
                             .padding()
-                            .background(Color(.systemGray6))
+                            .background(Color(.systemGray5))
                             .cornerRadius(12)
                             .foregroundColor(.black)
                             .autocapitalization(.none)
@@ -65,7 +65,7 @@ struct RegistrationView: View {
                         
                         SecureField("Пароль", text: $viewModel.password)
                             .padding()
-                            .background(Color(.systemGray6))
+                            .background(Color(.systemGray5))
                             .cornerRadius(12)
                             .foregroundColor(.black)
                             .textContentType(.newPassword)
@@ -74,7 +74,7 @@ struct RegistrationView: View {
                         
                         SecureField("Подтверждение пароля", text: $viewModel.confirmPassword)
                             .padding()
-                            .background(Color(.systemGray6))
+                            .background(Color(.systemGray5))
                             .cornerRadius(12)
                             .foregroundColor(.black)
                             .textContentType(.newPassword)

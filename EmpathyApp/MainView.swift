@@ -10,8 +10,8 @@ struct MainView: View {
     
     // Palette identical to Login / Registration
     private let gradientColors = [
-        Color(red: 0.98, green: 0.24, blue: 0.64),   // Flo‑like pink
-        Color(red: 0.55, green: 0.19, blue: 0.96)    // Flo‑like purple
+        Color(red: 0.75, green: 0.75, blue: 0.95),   // More vibrant lavender
+        Color(red: 0.65, green: 0.75, blue: 0.95)    // More vibrant blue
     ]
     
     var body: some View {
@@ -51,7 +51,7 @@ struct MainView: View {
                         
                         TextField("ID чата", text: $viewModel.joinChatID)
                             .padding()
-                            .background(Color(.systemGray6))
+                            .background(Color(.systemGray5))
                             .cornerRadius(12)
                             .textInputAutocapitalization(.never)
                             .focused($focusedField, equals: .chatID)
@@ -121,7 +121,7 @@ struct MainView: View {
                             NavigationLink(destination: ProfileView()) {
                                 Image(systemName: "person.circle")
                                     .font(.title2)
-                                    .foregroundColor(.purple)
+                                    .foregroundColor(gradientColors.first)
                             }
                             Button(action: { authManager.logout() }) {
                                 Image(systemName: "rectangle.portrait.and.arrow.right")

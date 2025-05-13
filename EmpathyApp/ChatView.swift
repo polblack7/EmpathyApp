@@ -1,10 +1,10 @@
 import SwiftUI
 
-// Фирменный градиент приложения (розовый → фиолетовый)
+// Фирменный градиент приложения (розовый → фиолетовый)
 private let floGradient = LinearGradient(
     colors: [
-        Color(red: 1.0, green: 0.2, blue: 0.1),         // розовый
-        Color(red: 0.55, green: 0.0, blue: 1.0)          // фиолетовый
+        Color(red: 0.75, green: 0.75, blue: 0.95),   // More vibrant lavender
+        Color(red: 0.65, green: 0.75, blue: 0.95)    // More vibrant blue
     ],
     startPoint: .topLeading,
     endPoint: .bottomTrailing)
@@ -103,10 +103,10 @@ struct ChatView: View {
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarBackButtonHidden(true)
             .toolbar {
-                // “Плюс” — слева
+                // "Плюс" — слева
                 
 
-                // “Покинуть” — справа
+                // "Покинуть" — справа
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
                         viewModel.leaveChat()
@@ -137,7 +137,9 @@ struct ChatView: View {
                     Form {
                         Section(header: Text("Новая карточка")) {
                             TextField("Название", text: $newCardTitle)
+                                .background(Color(.systemGray5))
                             TextField("Описание", text: $newCardDescription)
+                                .background(Color(.systemGray5))
                             
                             if let image = newCardImage {
                                 Image(uiImage: image)
