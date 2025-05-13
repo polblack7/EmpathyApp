@@ -83,7 +83,7 @@ struct ProfileView: View {
                     VStack(spacing: 8) {
                         statRow("Чатов", viewModel.chatsCount)
                         statRow("Карточек", viewModel.cardsCount)
-                        statRow("Сообщений", viewModel.messagesCount)
+                        
                     }
                     .padding()
                     .background(Color(.systemGray6))
@@ -91,43 +91,7 @@ struct ProfileView: View {
                     .padding(.horizontal, 32)
                     
                     // Categories
-                    VStack(spacing: 12) {
-                        HStack {
-                            Text("Категории эмоций")
-                                .font(.headline)
-                                .foregroundColor(.black)
-                            Spacer()
-                        }
-                        
-                        ForEach(viewModel.categories, id: \.self) { category in
-                            Text(category)
-                                .foregroundColor(.black)
-                                .font(.footnote)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.vertical, 4)
-                                .padding(.horizontal, 8)
-                                .background(Color(.systemGray6))
-                                .cornerRadius(8)
-                        }
-                        
-                        HStack {
-                            TextField("Новая категория", text: $viewModel.newCategoryName)
-                                .padding()
-                                .background(Color(.systemGray6))
-                                .cornerRadius(12)
-                                .focused($focusedField, equals: .newCategory)
-                                .onTapGesture { focusedField = .newCategory }
-                                .onChange(of: viewModel.newCategoryName) { _ in isFormDirty = true }
-                            
-                            Button("Добавить") {
-                                viewModel.addCategory()
-                            }
-                            .disabled(viewModel.newCategoryName.isEmpty)
-                            .font(.footnote)
-                            .foregroundColor(viewModel.newCategoryName.isEmpty ? .black.opacity(0.6) : .black)
-                        }
-                    }
-                    .padding(.horizontal, 32)
+                    
                     
                     // Save button
                     Button(action: {

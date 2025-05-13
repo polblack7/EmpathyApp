@@ -104,16 +104,7 @@ struct ChatView: View {
             .navigationBarBackButtonHidden(true)
             .toolbar {
                 // “Плюс” — слева
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: {
-                        showNewCardSheet = true
-                    }) {
-                        Circle()
-                            .fill(floGradient)
-                            .frame(width: 32, height: 32)
-                            .overlay(Image(systemName: "plus").foregroundColor(.white))
-                    }
-                }
+                
 
                 // “Покинуть” — справа
                 ToolbarItem(placement: .navigationBarTrailing) {

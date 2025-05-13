@@ -15,7 +15,9 @@ class NetworkService {
     private init() {}
     
     func login(email: String, password: String) async throws -> AuthResponse {
-        let url = URL(string: "\(baseURL)/auth/login")!
+        guard let url = URL(string: "\(baseURL)/auth/login") else {
+            throw NetworkError.serverError("Invalid response")
+        }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
