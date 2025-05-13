@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ProfileView: View {
     @StateObject private var viewModel = ProfileViewModel()
+    @State private var showImagePicker = false
    
     
     // Shared gradient palette
@@ -103,9 +104,7 @@ struct ProfileView: View {
                             .frame(maxWidth: .infinity)
                             .padding()
                             .background(
-                                LinearGradient(colors: buttonGradientColors,
-                                               startPoint: .leading,
-                                               endPoint: .trailing)
+                                Color(.systemGray3)
                             )
                             .foregroundColor(.white)
                             .cornerRadius(12)
@@ -134,6 +133,16 @@ struct ProfileView: View {
             }
             .alert("Изменения сохранены", isPresented: $viewModel.showSuccessAlert) {
                 Button("OK", role: .cancel) { }
+            }
+            .sheet(isPresented: $viewModel.showImagePicker) {
+                ImagePicker(image: Binding(
+                    get: { viewModel.avatarImage ?? UIImage() },
+                    set: { newImage in
+                        if let image = newImage {
+                            viewModel.updateAvatar(image)
+                        }
+                    }
+                ))
             }
         }
         

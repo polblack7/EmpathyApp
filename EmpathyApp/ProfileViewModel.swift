@@ -9,6 +9,7 @@ class ProfileViewModel: ObservableObject {
     @Published var avatarImage: UIImage?
     @Published var categories: [String]
     @Published var newCategoryName: String = ""
+    @Published var showImagePicker: Bool = false
     @Published var showSuccessAlert: Bool = false
     
     // Statistics
@@ -95,8 +96,33 @@ class ProfileViewModel: ObservableObject {
     }
     
     func changeAvatar() {
-        // Placeholder for avatar change logic
-        // In a real app, this would open UIImagePickerController
-        print("Avatar change requested")
+        showImagePicker = true
+    }
+    
+    func updateAvatar(_ image: UIImage) {
+        // Resize image to a reasonable size for avatar
+        let size = CGSize(width: 200, height: 200)
+        let renderer = UIGraphicsImageRenderer(size: size)
+        let resizedImage = renderer.image { context in
+            image.draw(in: CGRect(origin: .zero, size: size))
+        }
+        
+        // Update avatar
+        self.avatarImage = resizedImage
+        
+        // Update current user
+        if let currentUser = User.currentUser {
+            var updatedUser = currentUser
+            // In a real app, you would save the image to storage and store its URL
+            // For now, we'll just update the local state
+            User.currentUser = updatedUser
+            
+            // Update in all users list
+            if let index = User.allUsers.firstIndex(where: { $0.id == currentUser.id }) {
+                User.allUsers[index] = updatedUser
+            }
+        }
+        
+        showSuccessAlert = true
     }
 } 
