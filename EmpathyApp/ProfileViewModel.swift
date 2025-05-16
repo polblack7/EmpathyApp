@@ -11,6 +11,7 @@ class ProfileViewModel: ObservableObject {
     @Published var newCategoryName: String = ""
     @Published var showImagePicker: Bool = false
     @Published var showSuccessAlert: Bool = false
+    @Published var errorMessage: String = ""
     
     // Statistics
     var chatsCount: Int
@@ -33,38 +34,48 @@ class ProfileViewModel: ObservableObject {
             self.cardsCount = 0
             self.messagesCount = 0
         }
+        
+        // Load profile data from server
+        Task {
+            await loadProfile()
+        }
     }
     
     // MARK: - Profile Management
-    func saveChanges() {
-        guard let currentUser = User.currentUser else { return }
-        
-        // Create a mutable copy of the user
-        var updatedUser = currentUser
-        
-        // Update username if changed
-        if currentUser.username != username {
-            updatedUser.username = username
+    @MainActor
+    func loadProfile() async {
+        do {
+            let user = try await NetworkService.shared.getProfile()
+            self.username = user.username
+            self.categories = user.categories
+            self.chatsCount = user.chatsCount
+            self.cardsCount = user.cardsCount
+            self.messagesCount = user.messagesCount
+            UserManager.shared.updateUser(user)
+        } catch {
+            errorMessage = "Failed to load profile: \(error.localizedDescription)"
         }
-        
-        // Update password if changed
-        if !password.isEmpty {
-            // updatedUser.password = password
+    }
+    
+    @MainActor
+    func saveChanges() async {
+        do {
+            let updatedUser = try await NetworkService.shared.updateProfile(
+                username: username,
+                newPassword: password.isEmpty ? nil : password
+            )
+            
+            // Update user through UserManager
+            UserManager.shared.updateUser(updatedUser)
+            
+            // Clear password field
+            password = ""
+            
+            // Show success alert
+            showSuccessAlert = true
+        } catch {
+            errorMessage = "Failed to update profile: \(error.localizedDescription)"
         }
-        
-        // Update categories
-        updatedUser.categories = categories
-        
-        // Update current user
-        User.currentUser = updatedUser
-        
-        // Update in all users list
-        if let index = User.allUsers.firstIndex(where: { $0.id == currentUser.id }) {
-            User.allUsers[index] = updatedUser
-        }
-        
-        // Show success alert
-        showSuccessAlert = true
     }
     
     func addCategory() {
@@ -84,11 +95,6 @@ class ProfileViewModel: ObservableObject {
             updatedUser.categories = categories
             updatedUser.cardsCount += 1 // Increment cards count
             User.currentUser = updatedUser
-            
-            // Update in all users list
-            if let index = User.allUsers.firstIndex(where: { $0.id == currentUser.id }) {
-                User.allUsers[index] = updatedUser
-            }
         }
         
         // Clear input field
@@ -116,11 +122,6 @@ class ProfileViewModel: ObservableObject {
             // In a real app, you would save the image to storage and store its URL
             // For now, we'll just update the local state
             User.currentUser = updatedUser
-            
-            // Update in all users list
-            if let index = User.allUsers.firstIndex(where: { $0.id == currentUser.id }) {
-                User.allUsers[index] = updatedUser
-            }
         }
         
         showSuccessAlert = true

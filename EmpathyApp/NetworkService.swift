@@ -99,4 +99,68 @@ class NetworkService {
             throw NetworkError.serverError("Server error: \(httpResponse.statusCode)")
         }
     }
+    
+    func getProfile() async throws -> User {
+        guard let token = TokenService.shared.getToken() else {
+            throw NetworkError.unauthorized
+        }
+                guard let url = URL(string: "\(baseURL)/user/me") else {
+            throw NetworkError.invalidURL
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NetworkError.serverError("Invalid response")
+        }
+        
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return try JSONDecoder().decode(User.self, from: data)
+        case 401:
+            TokenService.shared.deleteToken()
+            throw NetworkError.unauthorized
+        default:
+            throw NetworkError.serverError("Server error: \(httpResponse.statusCode)")
+        }
+    }
+    
+    func updateProfile(username: String, newPassword: String? = nil) async throws -> User {
+        guard let token = TokenService.shared.getToken() else {
+            throw NetworkError.unauthorized
+        }
+        
+        guard let url = URL(string: "\(baseURL)/user/me") else {
+            throw NetworkError.invalidURL
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let updateRequest = UpdateUserRequest(username: username, newPassword: newPassword)
+        request.httpBody = try JSONEncoder().encode(updateRequest)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NetworkError.serverError("Invalid response")
+        }
+        
+        switch httpResponse.statusCode {
+        case 200:
+            return try JSONDecoder().decode(User.self, from: data)
+        case 401:
+            TokenService.shared.deleteToken()
+            throw NetworkError.unauthorized
+        default:
+            throw NetworkError.serverError("Server error: \(httpResponse.statusCode)")
+        }
+    }
 } 

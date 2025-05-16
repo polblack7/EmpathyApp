@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MainView: View {
     @StateObject private var viewModel = MainViewModel()
+    @StateObject private var userManager = UserManager.shared
     @EnvironmentObject private var authManager: AuthManager
     @FocusState private var focusedField: Field?
     private enum Field {
@@ -23,28 +24,29 @@ struct MainView: View {
                 .ignoresSafeArea()
             
             NavigationView {
-                VStack(spacing: 40) {
-                    
-                    // Welcome
+                VStack {
+                    // User Avatar
                     VStack(spacing: 6) {
-                        Text("Добро пожаловать!")
-                            .font(.system(size: 34, weight: .heavy, design: .rounded))
+                        Image(systemName: "person.circle.fill")
+                            .resizable()
+                            .frame(width: 100, height: 100)
                             .foregroundStyle(
                                 LinearGradient(colors: gradientColors,
                                                startPoint: .leading,
                                                endPoint: .trailing)
                             )
                         
-                        if let username = User.currentUser?.username {
+                        if let username = userManager.currentUser?.username {
                             Text(username)
                                 .font(.title3)
                                 .foregroundColor(.black.opacity(0.9))
                         }
                     }
-                    .padding(.top, 20)
+                    .padding(.top, 12)
                     
+                    .padding(.bottom, 80)
                     // Join Chat Section
-                    VStack(spacing: 16) {
+                    VStack(spacing: 18) {
                         Text("Присоединиться к чату")
                             .font(.headline)
                             .foregroundColor(.black)
@@ -77,15 +79,13 @@ struct MainView: View {
                         .disabled(viewModel.joinChatID.isEmpty)
                         .opacity(viewModel.joinChatID.isEmpty ? 0.6 : 1)
                     }
-                    .padding(.horizontal, 32)
+                    .padding(.horizontal, 28)
                     
+                    
+                    Spacer()
                     
                     // Create Chat Section
                     VStack(spacing: 16) {
-                        Text("Создать новый чат")
-                            .font(.headline)
-                            .foregroundColor(.black)
-                        
                         Button(action: {
                             viewModel.createChat()
                         }) {
@@ -103,14 +103,13 @@ struct MainView: View {
                         .cornerRadius(12)
                     }
                     .padding(.horizontal, 32)
+                    .padding(.bottom, 20)
                     
                     if !viewModel.errorMessage.isEmpty {
                         Text(viewModel.errorMessage)
                             .foregroundColor(.red)
                             .font(.caption)
                     }
-                    
-                    Spacer()
                 }
                 .padding()
                 .navigationBarTitle("Главная", displayMode: .inline)
@@ -146,10 +145,8 @@ struct MainView: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .navigationViewStyle(StackNavigationViewStyle())
                 .navigationBarBackButtonHidden(true)
-                
             }
         }
-        
     }
 }
 

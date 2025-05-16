@@ -96,9 +96,13 @@ struct ProfileView: View {
                     
                     // Save button
                     Button(action: {
-                        viewModel.saveChanges()
-                        isFormDirty = false       // reset state after saving
-                        presentationMode.wrappedValue.dismiss()   // navigate back to MainView
+                        Task {
+                            await viewModel.saveChanges()
+                            if viewModel.errorMessage.isEmpty {
+                                isFormDirty = false       // reset state after saving
+                                presentationMode.wrappedValue.dismiss()   // navigate back to MainView
+                            }
+                        }
                     }) {
                         Text("Сохранить")
                             .frame(maxWidth: .infinity)
@@ -113,6 +117,12 @@ struct ProfileView: View {
                     .disabled(!isFormDirty)
                     .opacity(isFormDirty ? 1 : 0.6)
                     
+                    if !viewModel.errorMessage.isEmpty {
+                        Text(viewModel.errorMessage)
+                            .foregroundColor(.red)
+                            .font(.caption)
+                            .padding(.horizontal, 32)
+                    }
                 }
                 .padding(.bottom, 40)
             }

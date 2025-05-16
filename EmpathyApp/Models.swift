@@ -2,7 +2,7 @@ import Foundation
 import SwiftUI
 
 // MARK: - User Model
-struct User: Identifiable, Equatable {
+struct User: Identifiable, Equatable, Codable {
     let id: UUID
     let email: String
     var username: String
@@ -24,6 +24,52 @@ struct User: Identifiable, Equatable {
         self.chatsCount = chatsCount
         self.cardsCount = cardsCount
         self.messagesCount = messagesCount
+    }
+    
+    // MARK: - Codable
+    enum CodingKeys: String, CodingKey {
+        case id, email, username
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        email = try container.decode(String.self, forKey: .email)
+        username = try container.decode(String.self, forKey: .username)
+        // Initialize optional fields with default values
+        categories = []
+        chatsCount = 0
+        cardsCount = 0
+        messagesCount = 0
+        avatarImage = nil
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(email, forKey: .email)
+        try container.encode(username, forKey: .username)
+    }
+}
+
+// MARK: - User Manager
+class UserManager: ObservableObject {
+    static let shared = UserManager()
+    
+    @Published var currentUser: User? {
+        didSet {
+            User.currentUser = currentUser
+        }
+    }
+    
+    private init() {
+        self.currentUser = User.currentUser
+    }
+    
+    func updateUser(_ user: User) {
+        DispatchQueue.main.async {
+            self.currentUser = user
+        }
     }
 }
 
@@ -77,5 +123,15 @@ struct Card: Identifiable {
         self.category = category
         self.creatorId = creatorId
         self.createdAt = createdAt
+    }
+}
+
+struct UpdateUserRequest: Codable {
+    let username: String
+    let newPassword: String?
+    
+    init(username: String, newPassword: String? = nil) {
+        self.username = username
+        self.newPassword = newPassword
     }
 } 
