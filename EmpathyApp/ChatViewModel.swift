@@ -7,7 +7,7 @@ class ChatViewModel: ObservableObject {
     @Published var messages: [Message] = []
     @Published var categories: [String: [Card]]
     @Published var selectedCategory: String
-
+    private let webSocketService = WebSocketService.shared
     
     // MARK: - Initialization
     init(chat: Chat) {
@@ -43,19 +43,60 @@ class ChatViewModel: ObservableObject {
         
         self.categories = initialCategories
         self.selectedCategory = initialCategories.keys.first ?? ""
+        
+        // Setup WebSocket connection
+        setupWebSocket()
+        
+        // Load initial messages
+        loadMessages()
+    }
+    
+    // MARK: - WebSocket Setup
+    private func setupWebSocket() {
+        webSocketService.connect(to: chat.lobbyId)
+        
+        // Subscribe to new messages
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleNewMessage),
+            name: .newChatMessage,
+            object: nil
+        )
+    }
+    
+    @objc private func handleNewMessage(_ notification: Notification) {
+        guard let messageResponse = notification.object as? ChatMessageResponse else { return }
+        
+        let card = Card(
+            title: messageResponse.card.title,
+            description: messageResponse.card.description,
+            category: "Полученные",
+            creatorId: UUID(uuidString: messageResponse.senderId) ?? UUID()
+        )
+        
+        let message = Message(
+            id: messageResponse.id,
+            text: "",
+            senderId: UUID(uuidString: messageResponse.senderId) ?? UUID(),
+            timestamp: messageResponse.timestamp,
+            card: card
+        )
+        
+        DispatchQueue.main.async {
+            self.messages.append(message)
+        }
     }
     
     // MARK: - Message Management
     func sendCard(_ card: Card) {
         guard let currentUser = User.currentUser else { return }
         
-        let message = Message(
-            text: "",
-            senderId: currentUser.id,
-            card: card
+        let request = ChatCardRequest(
+            title: card.title,
+            description: card.description
         )
         
-        messages.append(message)
+        webSocketService.sendMessage(request)
         
         // Update user's message count
         var updatedUser = currentUser
@@ -68,6 +109,44 @@ class ChatViewModel: ObservableObject {
         if let index = User.allUsers.firstIndex(where: { $0.id == currentUser.id }) {
             User.allUsers[index] = updatedUser
         }
+    }
+    
+    // MARK: - Message Loading
+    private func loadMessages() {
+        guard let token = TokenService.shared.getToken() else { return }
+        
+        let url = URL(string: "http://localhost:8080/api/chats/\(chat.lobbyId)/messages")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            guard let data = data,
+                  let messages = try? JSONDecoder().decode([ChatMessageResponse].self, from: data) else {
+                return
+            }
+            
+            let convertedMessages = messages.map { response in
+                let card = Card(
+                    title: response.card.title,
+                    description: response.card.description,
+                    category: "Полученные",
+                    creatorId: UUID(uuidString: response.senderId) ?? UUID()
+                )
+                
+                return Message(
+                    id: response.id,
+                    text: "",
+                    senderId: UUID(uuidString: response.senderId) ?? UUID(),
+                    timestamp: response.timestamp,
+                    card: card
+                )
+            }
+            
+            DispatchQueue.main.async {
+                self?.messages = convertedMessages
+            }
+        }.resume()
     }
     
     // MARK: - Custom Card Management
@@ -118,6 +197,17 @@ class ChatViewModel: ObservableObject {
         
         // Reset selected category
         selectedCategory = categories.keys.first ?? ""
+        
+        // Disconnect WebSocket
+        webSocketService.disconnect()
+        
+        // Remove notification observer
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    deinit {
+        webSocketService.disconnect()
+        NotificationCenter.default.removeObserver(self)
     }
 } 
  
