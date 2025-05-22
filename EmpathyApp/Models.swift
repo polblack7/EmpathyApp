@@ -126,6 +126,49 @@ struct Card: Identifiable {
     }
 }
 
+// MARK: - Lobby Model
+struct Lobby: Identifiable, Codable {
+    let id: String
+    let createdAt: Date
+    let participants: [String]
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case createdAt
+        case participants
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        
+        // Decode ISO8601 date string to Date
+        let dateString = try container.decode(String.self, forKey: .createdAt)
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = formatter.date(from: dateString) {
+            createdAt = date
+        } else {
+            throw DecodingError.dataCorruptedError(forKey: .createdAt, in: container, debugDescription: "Date string does not match format")
+        }
+        
+        participants = try container.decode([String].self, forKey: .participants)
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        
+        // Encode Date to ISO8601 string
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let dateString = formatter.string(from: createdAt)
+        try container.encode(dateString, forKey: .createdAt)
+        
+        try container.encode(participants, forKey: .participants)
+    }
+}
+
 struct UpdateUserRequest: Codable {
     let username: String
     let newPassword: String?

@@ -163,4 +163,74 @@ class NetworkService {
             throw NetworkError.serverError("Server error: \(httpResponse.statusCode)")
         }
     }
+    
+    // MARK: - Lobby Methods
+    
+    func createLobby() async throws -> Lobby {
+        guard let token = TokenService.shared.getToken() else {
+            throw NetworkError.unauthorized
+        }
+        
+        guard let url = URL(string: "\(baseURL)/lobbies") else {
+            throw NetworkError.invalidURL
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NetworkError.serverError("Invalid response")
+        }
+        
+        switch httpResponse.statusCode {
+        case 201:
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            return try decoder.decode(Lobby.self, from: data)
+        case 401:
+            TokenService.shared.deleteToken()
+            throw NetworkError.unauthorized
+        default:
+            throw NetworkError.serverError("Server error: \(httpResponse.statusCode)")
+        }
+    }
+    
+    func joinLobby(code: String) async throws -> Lobby {
+        guard let token = TokenService.shared.getToken() else {
+            throw NetworkError.unauthorized
+        }
+        
+        guard let url = URL(string: "\(baseURL)/lobbies/\(code)/join") else {
+            throw NetworkError.invalidURL
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NetworkError.serverError("Invalid response")
+        }
+        
+        switch httpResponse.statusCode {
+        case 200:
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            return try decoder.decode(Lobby.self, from: data)
+        case 401:
+            TokenService.shared.deleteToken()
+            throw NetworkError.unauthorized
+        case 404:
+            throw NetworkError.serverError("Лобби не найдено")
+        default:
+            throw NetworkError.serverError("Ошибка сервера: \(httpResponse.statusCode)")
+        }
+    }
 } 

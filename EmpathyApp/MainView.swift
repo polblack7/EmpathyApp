@@ -5,6 +5,8 @@ struct MainView: View {
     @StateObject private var userManager = UserManager.shared
     @EnvironmentObject private var authManager: AuthManager
     @FocusState private var focusedField: Field?
+    @State private var showingLobbyView = false
+    
     private enum Field {
         case chatID
     }
@@ -81,15 +83,14 @@ struct MainView: View {
                     }
                     .padding(.horizontal, 28)
                     
-                    
                     Spacer()
                     
-                    // Create Chat Section
+                    // Lobby Section
                     VStack(spacing: 16) {
                         Button(action: {
-                            viewModel.createChat()
+                            showingLobbyView = true
                         }) {
-                            Text("Создать лобби")
+                            Text("Управление лобби")
                                 .frame(maxWidth: .infinity)
                                 .padding()
                                 .fontWeight(.semibold)
@@ -142,6 +143,9 @@ struct MainView: View {
                         EmptyView()
                     }
                 )
+                .sheet(isPresented: $showingLobbyView) {
+                    LobbyView()
+                }
                 .navigationBarTitleDisplayMode(.inline)
                 .navigationViewStyle(StackNavigationViewStyle())
                 .navigationBarBackButtonHidden(true)
