@@ -125,6 +125,13 @@ struct LobbyView: View {
                 }
             }
         }
+        .fullScreenCover(isPresented: $viewModel.shouldNavigateToChat) {
+            if let chat = viewModel.activeChat {
+                NavigationView {
+                    ChatView(viewModel: ChatViewModel(chat: chat))
+                }
+            }
+        }
     }
 }
 

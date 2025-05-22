@@ -123,7 +123,7 @@ struct ChatView: View {
 
                 ToolbarItem(placement: .principal) {
                     VStack(spacing: 2) {
-                        Text("Чат \(viewModel.chat.id.uuidString.prefix(8))")
+                        Text("Чат \(viewModel.chat.lobbyId)")
                             .font(.headline)
                             .foregroundStyle(floGradient)
                         Text(viewModel.chat.createdAt, style: .date)

@@ -78,13 +78,15 @@ struct Chat: Identifiable {
     let id: UUID
     let createdAt: Date
     var participants: [UUID]
+    let lobbyId: String
     
     static var allChats: [Chat] = []
     
-    init(id: UUID = UUID(), createdAt: Date = Date(), participants: [UUID]) {
+    init(id: UUID = UUID(), createdAt: Date = Date(), participants: [UUID], lobbyId: String = "") {
         self.id = id
         self.createdAt = createdAt
         self.participants = participants
+        self.lobbyId = lobbyId
     }
 }
 
