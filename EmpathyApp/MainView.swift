@@ -7,6 +7,7 @@ struct MainView: View {
     @FocusState private var focusedField: Field?
     @State private var showingLobbyView = false
     
+    
     private enum Field {
         case chatID
     }
@@ -53,7 +54,7 @@ struct MainView: View {
                             .font(.headline)
                             .foregroundColor(.black)
                         
-                        TextField("ID чата", text: $viewModel.joinChatID)
+                        TextField("ID чата", text: $viewModel.lobbyCode)
                             .padding()
                             .background(Color(.systemGray5))
                             .cornerRadius(12)
@@ -64,7 +65,9 @@ struct MainView: View {
                             .contentShape(Rectangle())
                         
                         Button(action: {
-                            viewModel.joinChat()
+                            Task{
+                                await viewModel.joinLobby()
+                            }
                         }) {
                             Text("Присоединиться")
                                 .frame(maxWidth: .infinity)
@@ -78,8 +81,8 @@ struct MainView: View {
                         )
                         .foregroundColor(.white)
                         .cornerRadius(12)
-                        .disabled(viewModel.joinChatID.isEmpty)
-                        .opacity(viewModel.joinChatID.isEmpty ? 0.6 : 1)
+                        .disabled(viewModel.lobbyCode.isEmpty)
+                        .opacity(viewModel.lobbyCode.isEmpty ? 0.6 : 1)
                     }
                     .padding(.horizontal, 28)
                     

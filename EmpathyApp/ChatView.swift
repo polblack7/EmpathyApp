@@ -109,8 +109,15 @@ struct ChatView: View {
                 // "Покинуть" — справа
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
-                        viewModel.leaveChat()
-                        presentationMode.wrappedValue.dismiss()
+                        Task {
+                            do {
+                                try await viewModel.leaveLobby()
+                                presentationMode.wrappedValue.dismiss()
+                            } catch {
+                                // Handle error (e.g., show error message to user)
+                                print("Error leaving lobby: \(error)")
+                            }
+                        }
                     }) {
                         Text("Покинуть")
                             .padding(.horizontal, 12)

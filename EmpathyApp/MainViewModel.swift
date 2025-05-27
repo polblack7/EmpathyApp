@@ -6,48 +6,66 @@ class MainViewModel: ObservableObject {
     @Published var joinChatID: String = ""
     @Published var errorMessage: String = ""
     @Published var activeChat: Chat?
+    @Published var currentLobby: Lobby?
+    @Published var error: Error?
+    @Published var isLoading = false
+    @Published var lobbyCode = ""
+    @Published var shouldNavigateToChat = false
+    
+    
+    private let networkService = NetworkService.shared
     
     // MARK: - Chat Creation
-    func createChat() {
-        // Reset error message
-        errorMessage = ""
+    func createLobby() async {
+        isLoading = true
+        error = nil
         
-        // Create new chat
-        let newChat = Chat(
-            participants: [User.currentUser?.id ?? UUID()] // Add current user as participant
-        )
+        do {
+            currentLobby = try await networkService.createLobby()
+            // Create a new chat for the lobby using the lobby ID
+            if let lobby = currentLobby {
+                let chat = Chat(
+                    id: UUID(uuidString: lobby.id) ?? UUID(),
+                    createdAt: lobby.createdAt,
+                    participants: lobby.participants.compactMap { UUID(uuidString: $0) },
+                    lobbyId: lobby.id
+                )
+                Chat.allChats.append(chat)
+                activeChat = chat
+                shouldNavigateToChat = true
+            }
+        } catch {
+            self.error = error
+        }
         
-        // Add to all chats
-        Chat.allChats.append(newChat)
-        
-        // Set active chat
-        activeChat = newChat
+        isLoading = false
     }
     
     // MARK: - Chat Joining
-    func joinChat() {
-        // Reset error message
-        errorMessage = ""
+    func joinLobby() async {
+        guard !lobbyCode.isEmpty else { return }
         
-        // Validate input
-        guard !joinChatID.isEmpty else {
-            errorMessage = "Введите ID чата"
-            return
-        }
+        isLoading = true
+        error = nil
         
-        // Find chat by ID
-        if let chat = Chat.allChats.first(where: { $0.id.uuidString == joinChatID }) {
-            // Add current user to participants if not already there
-            if !chat.participants.contains(User.currentUser?.id ?? UUID()) {
-                var updatedChat = chat
-                updatedChat.participants.append(User.currentUser?.id ?? UUID())
-                if let index = Chat.allChats.firstIndex(where: { $0.id == chat.id }) {
-                    Chat.allChats[index] = updatedChat
-                }
+        do {
+            currentLobby = try await networkService.joinLobby(code: lobbyCode)
+            // Create a new chat for the lobby using the lobby ID
+            if let lobby = currentLobby {
+                let chat = Chat(
+                    id: UUID(uuidString: lobby.id) ?? UUID(),
+                    createdAt: lobby.createdAt,
+                    participants: lobby.participants.compactMap { UUID(uuidString: $0) },
+                    lobbyId: lobby.id
+                )
+                Chat.allChats.append(chat)
+                activeChat = chat
+                shouldNavigateToChat = true
             }
-            activeChat = chat
-        } else {
-            errorMessage = "Чат с ID \(joinChatID) не найден"
+        } catch {
+            self.error = error
         }
+        
+        isLoading = false
     }
-} 
+}

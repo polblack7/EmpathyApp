@@ -68,26 +68,7 @@ struct LobbyView: View {
                 .cornerRadius(15)
                 .shadow(radius: 5)
                 
-                if let lobby = viewModel.currentLobby {
-                    VStack(spacing: 10) {
-                        Text("Текущее лобби")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                        
-                        Text("Код: \(lobby.id)")
-                            .font(.headline)
-                        
-                        Text("Создано: \(lobby.createdAt.formatted(.dateTime))")
-                            .font(.subheadline)
-                        
-                        Text("Участников: \(lobby.participants.count)")
-                            .font(.subheadline)
-                    }
-                    .padding()
-                    .background(Color(.systemBackground))
-                    .cornerRadius(15)
-                    .shadow(radius: 5)
-                }
+                
                 
                 if viewModel.isLoading {
                     ProgressView()
