@@ -1,5 +1,8 @@
 import Foundation
 import SwiftUI
+import UIKit
+
+
 
 class MainViewModel: ObservableObject {
     // MARK: - Published Properties
@@ -12,8 +15,14 @@ class MainViewModel: ObservableObject {
     @Published var lobbyCode = ""
     @Published var shouldNavigateToChat = false
     
-    
     private let networkService = NetworkService.shared
+    
+    init() {
+        // Load initial data when the view model is created
+        Task {
+            await loadProfile()
+        }
+    }
     
     // MARK: - Chat Creation
     func createLobby() async {
@@ -67,5 +76,21 @@ class MainViewModel: ObservableObject {
         }
         
         isLoading = false
+    }
+    
+    // MARK: - Message Loading
+    @MainActor
+    func loadProfile() async {
+        do {
+            let user = try await NetworkService.shared.getProfile()
+            // Update userManager here if needed, or ensure MainView observes userManager
+            UserManager.shared.updateUser(user) // Assuming UserManager is observed by MainView
+            // You might want to update some viewModel properties based on the loaded user if necessary
+        } catch {
+            // Handle error, maybe set an errorMessage published property
+            DispatchQueue.main.async {
+                self.errorMessage = "Failed to load profile: \(error.localizedDescription)"
+            }
+        }
     }
 }

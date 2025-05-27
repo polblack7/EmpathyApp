@@ -74,6 +74,7 @@ class AuthManager: ObservableObject {
     func logout() {
         TokenService.shared.deleteToken()
         User.currentUser = nil
+        AvatarStorageService.shared.deleteAvatar()
         isAuthenticated = false
     }
 }

@@ -39,6 +39,9 @@ class ProfileViewModel: ObservableObject {
         Task {
             await loadProfile()
         }
+        
+        // Load avatar from local storage
+        self.avatarImage = AvatarStorageService.shared.loadAvatar()
     }
     
     // MARK: - Profile Management
@@ -113,16 +116,18 @@ class ProfileViewModel: ObservableObject {
             image.draw(in: CGRect(origin: .zero, size: size))
         }
         
-        // Update avatar
+        // Update avatar in view model
         self.avatarImage = resizedImage
         
-        // Update current user
-        if let currentUser = User.currentUser {
-            var updatedUser = currentUser
-            // In a real app, you would save the image to storage and store its URL
-            // For now, we'll just update the local state
-            User.currentUser = updatedUser
-        }
+        // Save avatar to local storage
+        AvatarStorageService.shared.saveAvatar(image: resizedImage)
+        
+        // Update current user (optional, depending on whether avatar is part of User model)
+        // if let currentUser = User.currentUser {
+        //     var updatedUser = currentUser
+        //     updatedUser.avatarImage = resizedImage
+        //     User.currentUser = updatedUser
+        // }
         
         showSuccessAlert = true
     }

@@ -44,19 +44,19 @@ struct ProfileView: View {
                                 .scaledToFill()
                                 .frame(width: 120, height: 120)
                                 .clipShape(Circle())
+                                .onTapGesture {
+                                    viewModel.changeAvatar()
+                                }
                         } else {
                             Image(systemName: "person.crop.circle.fill")
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 120, height: 120)
                                 .foregroundColor(.white.opacity(0.7))
+                                .onTapGesture {
+                                    viewModel.changeAvatar()
+                                }
                         }
-                        
-                        Button("Изменить аватар") {
-                            viewModel.changeAvatar()
-                        }
-                        .font(.footnote)
-                        .foregroundColor(.black)
                     }
                     .padding(.top, 20)
                     
