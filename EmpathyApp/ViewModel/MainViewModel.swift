@@ -86,6 +86,12 @@ class MainViewModel: ObservableObject {
             // Update userManager here if needed, or ensure MainView observes userManager
             UserManager.shared.updateUser(user) // Assuming UserManager is observed by MainView
             // You might want to update some viewModel properties based on the loaded user if necessary
+            
+            // Load local counters from storage
+            let localChatsCount = CountersStorageService.shared.getChatsCount()
+            let localSentCardsCount = CountersStorageService.shared.getSentCardsCount()
+            print("Local counters loaded in ProfileViewModel loadProfile. Chats: \(localChatsCount), Cards: \(localSentCardsCount)")
+            
         } catch {
             // Handle error, maybe set an errorMessage published property
             DispatchQueue.main.async {

@@ -108,7 +108,10 @@ class ChatViewModel: ObservableObject {
         
         webSocketService.sendMessage(request)
         
-        // Update user's message count
+        // Increment local sent cards counter
+        CountersStorageService.shared.incrementSentCardsCount()
+        
+        // Update user's message count (This seems to be a server-side stat, keep it for now)
         var updatedUser = currentUser
         updatedUser.messagesCount += 1
         
@@ -125,7 +128,7 @@ class ChatViewModel: ObservableObject {
     private func loadMessages() {
         guard let token = TokenService.shared.getToken() else { return }
         
-        let url = URL(string: "http://localhost:8080/api/chats/\(chat.lobbyId)/messages")!
+        let url = URL(string: "http://45.149.63.247:8080/api/chats/\(chat.lobbyId)/messages")!
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")

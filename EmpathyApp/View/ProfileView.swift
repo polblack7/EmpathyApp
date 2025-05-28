@@ -82,8 +82,8 @@ struct ProfileView: View {
                     
                     // Stats
                     VStack(spacing: 8) {
-                        statRow("Чатов", viewModel.chatsCount)
-                        statRow("Карточек", viewModel.cardsCount)
+                        statRow("Чатов", viewModel.localChatsCount)
+                        statRow("Отправлено карточек", viewModel.localSentCardsCount)
                         
                     }
                     .padding()
@@ -153,6 +153,11 @@ struct ProfileView: View {
                         }
                     }
                 ))
+            }
+            .onAppear {
+                viewModel.localChatsCount = CountersStorageService.shared.getChatsCount()
+                viewModel.localSentCardsCount = CountersStorageService.shared.getSentCardsCount()
+                print("Local counters loaded in ProfileView onAppear. Chats: \(viewModel.localChatsCount), Cards: \(viewModel.localSentCardsCount)")
             }
         }
         

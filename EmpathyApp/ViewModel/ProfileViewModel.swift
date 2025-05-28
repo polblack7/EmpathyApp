@@ -13,7 +13,11 @@ class ProfileViewModel: ObservableObject {
     @Published var showSuccessAlert: Bool = false
     @Published var errorMessage: String = ""
     
-    // Statistics
+    // Local Counters
+    @Published var localChatsCount: Int = 0
+    @Published var localSentCardsCount: Int = 0
+    
+    // Statistics (These seem to be server-side stats, keeping them separate)
     var chatsCount: Int
     var cardsCount: Int
     var messagesCount: Int
@@ -42,6 +46,10 @@ class ProfileViewModel: ObservableObject {
         
         // Load avatar from local storage
         self.avatarImage = AvatarStorageService.shared.loadAvatar()
+        
+        // Load local counters from storage
+        self.localChatsCount = CountersStorageService.shared.getChatsCount()
+        self.localSentCardsCount = CountersStorageService.shared.getSentCardsCount()
     }
     
     // MARK: - Profile Management
@@ -51,10 +59,16 @@ class ProfileViewModel: ObservableObject {
             let user = try await NetworkService.shared.getProfile()
             self.username = user.username
             self.categories = user.categories
-            self.chatsCount = user.chatsCount
-            self.cardsCount = user.cardsCount
-            self.messagesCount = user.messagesCount
+            // Assuming these stats from server are different from local ones
+            // self.chatsCount = user.chatsCount
+            // self.cardsCount = user.cardsCount
+            // self.messagesCount = user.messagesCount
             UserManager.shared.updateUser(user)
+            
+            // Load local counters from storage
+            self.localChatsCount = CountersStorageService.shared.getChatsCount()
+            self.localSentCardsCount = CountersStorageService.shared.getSentCardsCount()
+            
         } catch {
             errorMessage = "Failed to load profile: \(error.localizedDescription)"
         }
@@ -92,11 +106,11 @@ class ProfileViewModel: ObservableObject {
         // Add new category
         categories.append(newCategoryName)
         
-        // Update current user
+        // Update current user (assuming categories are part of user model)
         if let currentUser = User.currentUser {
             var updatedUser = currentUser
             updatedUser.categories = categories
-            updatedUser.cardsCount += 1 // Increment cards count
+            // updatedUser.cardsCount += 1 // This was incrementing a server-side stat, remove for local counter
             User.currentUser = updatedUser
         }
         

@@ -28,7 +28,12 @@ class LobbyViewModel: ObservableObject {
                 )
                 Chat.allChats.append(chat)
                 activeChat = chat
+                
                 shouldNavigateToChat = true
+                
+                // Increment local chats counter
+                CountersStorageService.shared.incrementChatsCount()
+                print("Chats counter incremented in createLobby [LobbyViewModel]. Current count: \(CountersStorageService.shared.getChatsCount())")
             }
         } catch {
             self.error = error
@@ -56,6 +61,10 @@ class LobbyViewModel: ObservableObject {
                 Chat.allChats.append(chat)
                 activeChat = chat
                 shouldNavigateToChat = true
+                
+                // Increment local chats counter
+                CountersStorageService.shared.incrementChatsCount()
+                print("Chats counter incremented in joinLobby [LobbyViewModel]. Current count: \(CountersStorageService.shared.getChatsCount())")
             }
         } catch {
             self.error = error

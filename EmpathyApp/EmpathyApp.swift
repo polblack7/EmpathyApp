@@ -75,6 +75,7 @@ class AuthManager: ObservableObject {
         TokenService.shared.deleteToken()
         User.currentUser = nil
         AvatarStorageService.shared.deleteAvatar()
+        CountersStorageService.shared.resetCounters()
         isAuthenticated = false
     }
 }

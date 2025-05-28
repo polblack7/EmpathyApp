@@ -14,7 +14,7 @@ class WebSocketService: NSObject, URLSessionWebSocketDelegate {
     
     func connect(to chatId: String) {
         guard let token = TokenService.shared.getToken(),
-              let url = URL(string: "ws://localhost:8080/ws/chats/\(chatId)?token=\(token)") else {
+              let url = URL(string: "ws://45.149.63.247:8080/ws/chats/\(chatId)?token=\(token)") else {
             print("Invalid WebSocket URL or no token found")
             return
         }

@@ -10,7 +10,7 @@ enum NetworkError: Error {
 
 class NetworkService {
     static let shared = NetworkService()
-    private let baseURL = "http://localhost:8080/api"
+    private let baseURL = "http://45.149.63.247:8080/api"
     
     private init() {}
     
